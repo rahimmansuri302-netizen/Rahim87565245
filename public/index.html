@@ -1,82 +1,322 @@
+
 <!DOCTYPE html>
-<html lang="en">
+<html lang="hi">
 <head>
-<meta charset="UTF-8"/>
-<meta name="viewport" content="width=device-width,initial-scale=1.0"/>
-<title>AK-777</title>
-<script src="https://checkout.razorpay.com/v1/checkout.js"></script>
-<style>
-body{margin:0;font-family:sans-serif;background:#091318;color:#fff;display:flex;justify-content:center}
-.app{width:100%;max-width:450px;min-height:100vh;background:#102028;padding-bottom:70px}
-.hdr{display:flex;justify-content:space-between;align-items:center;padding:12px 14px;background:#091318;border-bottom:1px solid #223b48}
-.logo{font-weight:900;font-size:20px;color:#f5b915}.logo span{color:#14b885}
-.pill{background:#182e39;padding:5px 12px;border-radius:20px;font-weight:700}
-.box{margin:12px;padding:14px;background:#172b36;border:1px solid #24404f;border-radius:12px}
-input{width:100%;padding:10px;margin:6px 0 10px;border-radius:8px;border:1px solid #2b4b5c;background:#0d1a21;color:#fff;box-sizing:border-box}
-button{width:100%;padding:12px;border:none;border-radius:20px;background:#14b885;color:#fff;font-weight:700;cursor:pointer}
-.nav{position:fixed;bottom:0;width:100%;max-width:450px;display:grid;grid-template-columns:repeat(3,1fr);background:#091318;border-top:1px solid #223b48}
-.nav div{padding:12px;text-align:center;font-size:13px;cursor:pointer}
-.screen{display:none}.screen.active{display:block}
-.modal{position:fixed;inset:0;background:rgba(0,0,0,.92);display:flex;align-items:center;justify-content:center;padding:16px;z-index:20}
-</style>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>AK777</title>
+  <style>
+    * { box-sizing: border-box; font-family: Arial, sans-serif; }
+    body { margin: 0; background: #071318; color: #f1f5f9; padding-bottom: 70px; }
+    header {
+      display: flex; justify-content: space-between; align-items: center;
+      padding: 14px 16px; background: #0b1c24; border-bottom: 1px solid #16323f;
+      position: sticky; top: 0; z-index: 10;
+    }
+    .brand { font-size: 20px; font-weight: bold; color: #22c55e; }
+    .bal-box { background: #102a36; padding: 8px 12px; border-radius: 999px; font-weight: bold; font-size: 14px; }
+    .container { padding: 14px; max-width: 520px; margin: auto; }
+    .card {
+      background: #0d212b; border: 1px solid #183847; border-radius: 14px;
+      padding: 16px; margin-bottom: 14px;
+    }
+    h2, h3 { margin: 0 0 12px 0; }
+    input, select {
+      width: 100%; padding: 11px 12px; margin-bottom: 10px;
+      border-radius: 10px; border: 1px solid #244b5e; background: #08161d;
+      color: #fff; font-size: 15px;
+    }
+    button {
+      width: 100%; padding: 12px; border: none; border-radius: 10px;
+      font-size: 15px; font-weight: bold; cursor: pointer; margin-bottom: 8px;
+    }
+    .btn-green { background: #22c55e; color: #052e16; }
+    .btn-yellow { background: #f59e0b; color: #1f1300; }
+    .btn-blue { background: #3b82f6; color: #fff; }
+    .btn-red { background: #ef4444; color: #fff; }
+    .btn-small { width: auto; padding: 7px 12px; font-size: 13px; margin: 4px 6px 0 0; display: inline-block; }
+    .mult { font-size: 36px; font-weight: bold; text-align: center; margin: 14px 0; color: #38bdf8; }
+    .qr-box { text-align: center; background: #08161d; padding: 14px; border-radius: 12px; margin-top: 10px; }
+    .qr-box img { width: 200px; height: 200px; border-radius: 8px; background: #fff; padding: 6px; }
+    .item { background: #08161d; padding: 10px 12px; border-radius: 10px; margin-bottom: 8px; font-size: 14px; border: 1px solid #16323f; }
+    .muted { color: #94a3b8; font-size: 13px; }
+    .msg { background: #102a36; color: #86efac; padding: 10px; border-radius: 10px; margin-bottom: 10px; font-size: 14px; }
+    .err { background: #3b0d14; color: #fca5a5; padding: 10px; border-radius: 10px; margin-bottom: 10px; font-size: 14px; }
+    nav {
+      position: fixed; bottom: 0; left: 0; right: 0;
+      display: flex; background: #0b1c24; border-top: 1px solid #16323f;
+    }
+    nav button {
+      flex: 1; margin: 0; border-radius: 0; background: transparent;
+      color: #94a3b8; padding: 14px 6px; font-size: 14px;
+    }
+    nav button.active { color: #22c55e; border-top: 2px solid #22c55e; }
+    .hidden { display: none; }
+    a.upi-btn {
+      display: inline-block; text-decoration: none; background: #22c55e;
+      color: #052e16; font-weight: bold; padding: 10px 14px; border-radius: 10px; margin-top: 8px;
+    }
+  </style>
 </head>
 <body>
-<div class="app">
-  <div id="loginModal" class="modal">
-    <div class="box" style="width:100%;max-width:360px">
-      <div class="logo" style="text-align:center;margin-bottom:8px">AK<span>777</span></div>
-      <input id="phoneInp" placeholder="10-digit mobile" maxlength="10"/>
-      <div id="otpBox" style="display:none"><input id="otpInp" placeholder="Enter OTP"/><button onclick="verifyOtp()">Verify OTP</button></div>
-      <button id="sendBtn" onclick="sendOtp()">Send OTP</button>
-      <p id="hint" style="color:#f5b915;font-size:12px"></p>
-    </div>
+  <header>
+    <div class="brand">AK777</div>
+    <div class="bal-box" id="topBalance">INR 0.00</div>
+  </header>
+
+  <div class="container">
+    <div id="noticeArea"></div>
+
+    <!-- GAMES TAB -->
+    <section id="tab-games">
+      <div class="card">
+        <h2>Aviator Live</h2>
+        <div class="mult" id="multText">1.80x</div>
+        <input type="number" id="betAmount" value="50" min="10" placeholder="Bet amount" />
+        <button class="btn-green" onclick="placeBet()">Place Bet</button>
+        <div class="muted" id="withdrawableHint">Withdrawable: INR 0.00</div>
+      </div>
+    </section>
+
+    <!-- WALLET TAB -->
+    <section id="tab-wallet" class="hidden">
+      <div class="card">
+        <h2>Deposit (QR / UPI)</h2>
+        <div class="muted" style="margin-bottom: 10px;">Withdrawable: <strong id="walletWithdrawable">INR 0.00</strong></div>
+        <input type="number" id="depositAmount" value="500" min="10" placeholder="Enter deposit amount (INR)" />
+        <button class="btn-green" onclick="createDeposit()">Generate QR Code</button>
+
+        <div id="qrSection" class="qr-box hidden">
+          <div id="qrOrderInfo" style="margin-bottom: 8px; font-weight: bold;"></div>
+          <img id="qrImg" alt="UPI QR Code" />
+          <div class="muted" style="margin-top: 8px;" id="upiIdText"></div>
+          <div><a id="upiPayLink" class="upi-btn" href="#">UPI App से पेमेंट करें</a></div>
+          <hr style="border-color: #16323f; margin: 14px 0;" />
+          <input type="text" id="utrInput" placeholder="12-digit UTR / Transaction ID डालें" />
+          <button class="btn-blue" onclick="submitUtr()">पेमेंट कन्फ़र्म करें (Submit UTR)</button>
+        </div>
+      </div>
+
+      <div class="card">
+        <h2>Withdrawal Request</h2>
+        <input type="text" id="accHolder" placeholder="Account holder name" />
+        <input type="text" id="accNumber" placeholder="Account number" />
+        <input type="text" id="ifscCode" placeholder="IFSC code" />
+        <input type="number" id="withdrawAmount" placeholder="Withdraw amount (min 110)" />
+        <button class="btn-yellow" onclick="requestWithdraw()">Request Withdrawal</button>
+      </div>
+    </section>
+
+    <!-- HISTORY & ADMIN TAB -->
+    <section id="tab-history" class="hidden">
+      <div class="card">
+        <h2>Deposits & Orders</h2>
+        <div id="depositsList"></div>
+      </div>
+
+      <div class="card">
+        <h2>Withdrawal Requests</h2>
+        <div id="withdrawalsList"></div>
+      </div>
+
+      <div class="card">
+        <h3>Admin Panel</h3>
+        <input type="password" id="adminPin" placeholder="Admin PIN (default: 1234)" />
+        <button class="btn-blue" onclick="loadState()">Refresh Requests</button>
+        <div id="adminQueue" style="margin-top: 10px;"></div>
+      </div>
+    </section>
   </div>
-  <div class="hdr">
-    <div class="logo">AK<span>777</span></div>
-    <div class="pill">INR <span id="bal">0.00</span></div>
-  </div>
-  <div id="s1" class="screen active">
-    <div class="box">
-      <h3>Aviator Live</h3>
-      <div id="mult" style="font-size:34px;font-weight:900;text-align:center;padding:20px 0">1.00x</div>
-      <input id="betInp" type="number" value="50"/>
-      <button onclick="placeBet()">Place Bet</button>
-    </div>
-  </div>
-  <div id="s2" class="screen">
-    <div class="box">
-      <h3>Wallet</h3>
-      <p>Withdrawable: INR <span id="wdAvail">0.00</span></p>
-      <input id="depInp" type="number" value="500"/>
-      <button onclick="deposit()">Deposit</button>
-      <hr style="margin:14px 0;border-color:#24404f"/>
-      <input id="wdName" placeholder="Account holder name"/>
-      <input id="wdAcc" placeholder="Account number"/>
-      <input id="wdIfsc" placeholder="IFSC code"/>
-      <input id="wdAmt" type="number" placeholder="Withdraw amount (min 110)"/>
-      <button style="background:#f5b915;color:#000" onclick="withdraw()">Withdraw</button>
-    </div>
-  </div>
-  <div id="s3" class="screen"><div class="box" id="histBox">No records</div></div>
-  <div class="nav">
-    <div onclick="showS('s1')">Games</div>
-    <div onclick="showS('s2')">Wallet</div>
-    <div onclick="showS('s3');loadHist()">History</div>
-  </div>
-</div>
-<script>
-let token=localStorage.getItem('ak_tok')||'',user=null,m=1;
-const hdr=()=>({'Content-Type':'application/json',...(token?{Authorization:'Bearer '+token}:{})});
-function render(){if(!user)return;bal.textContent=Number(user.balance).toFixed(2);wdAvail.textContent=Number(user.withdrawable).toFixed(2)}
-function showS(id){document.querySelectorAll('.screen').forEach(x=>x.classList.remove('active'));document.getElementById(id).classList.add('active')}
-async function sendOtp(){const r=await fetch('/api/auth/send-otp',{method:'POST',headers:hdr(),body:JSON.stringify({phone:phoneInp.value})});const d=await r.json();if(!d.success)return alert(d.message);otpBox.style.display='block';sendBtn.style.display='none';if(d.demoOtp){hint.textContent='Demo OTP: '+d.demoOtp;otpInp.value=d.demoOtp}}
-async function verifyOtp(){const r=await fetch('/api/auth/verify-otp',{method:'POST',headers:hdr(),body:JSON.stringify({phone:phoneInp.value,otp:otpInp.value})});const d=await r.json();if(!d.success)return alert(d.message);token=d.token;localStorage.setItem('ak_tok',token);user=d.user;loginModal.style.display='none';render()}
-async function placeBet(){const r=await fetch('/api/game/bet',{method:'POST',headers:hdr(),body:JSON.stringify({amount:Number(betInp.value)})});const d=await r.json();if(!d.success)return alert(d.message);user=d.user;render();alert('Bet placed!')}
-async function deposit(){const r=await fetch('/api/wallet/deposit/create',{method:'POST',headers:hdr(),body:JSON.stringify({amount:Number(depInp.value)})});const d=await r.json();if(!d.success)return alert(d.message);if(d.razorpay&&window.Razorpay){new window.Razorpay({key:d.razorpay.keyId,amount:d.razorpay.amountPaise,currency:d.razorpay.currency,name:'AK-777',order_id:d.razorpay.orderId,handler:async resp=>{const v=await fetch('/api/wallet/deposit/verify',{method:'POST',headers:hdr(),body:JSON.stringify(resp)});const vd=await v.json();if(vd.success){user=vd.user;render();alert(vd.message)}}}).open();return}const w=await fetch('/api/wallet/deposit/webhook',{method:'POST',headers:hdr(),body:JSON.stringify({orderId:d.orderId})});const wd=await w.json();if(wd.success){user=wd.user;render();alert(wd.message)}}
-async function withdraw(){const r=await fetch('/api/wallet/withdraw',{method:'POST',headers:hdr(),body:JSON.stringify({name:wdName.value,accountNumber:wdAcc.value,ifsc:wdIfsc.value,amount:Number(wdAmt.value)})});const d=await r.json();alert(d.message);if(d.success){user=d.user;render()}}
-async function loadHist(){const r=await fetch('/api/wallet/history',{headers:hdr()});const d=await r.json();histBox.innerHTML=(d.history||[]).map(x=>`<div>${x.type}: INR ${x.amount} (${x.status})</div>`).join('')||'No records'}
-setInterval(()=>{m=m>=5?1:Number((m+0.05).toFixed(2));mult.textContent=m.toFixed(2)+'x'},200);
-(async()=>{if(!token)return;const r=await fetch('/api/auth/auto-login',{headers:hdr()});const d=await r.json();if(d.success){user=d.user;loginModal.style.display='none';render()}})();
-</script>
+
+  <nav>
+    <button id="nav-games" class="active" onclick="switchTab('games')">Games</button>
+    <button id="nav-wallet" onclick="switchTab('wallet')">Wallet</button>
+    <button id="nav-history" onclick="switchTab('history')">History</button>
+  </nav>
+
+  <script>
+    let currentState = { balance: 0, withdrawable: 0, deposits: [], withdrawals: [] };
+    let activeOrder = null;
+
+    function showNotice(text, isError = false) {
+      const area = document.getElementById('noticeArea');
+      area.innerHTML = `<div class="${isError ? 'err' : 'msg'}">${text}</div>`;
+      setTimeout(() => { area.innerHTML = ''; }, 5000);
+    }
+
+    function switchTab(tab) {
+      ['games', 'wallet', 'history'].forEach((t) => {
+        document.getElementById('tab-' + t).classList.toggle('hidden', t !== tab);
+        document.getElementById('nav-' + t).classList.toggle('active', t === tab);
+      });
+      loadState();
+    }
+
+    async function loadState() {
+      const res = await fetch('/api/state');
+      currentState = await res.json();
+      renderAll();
+    }
+
+    function renderAll() {
+      document.getElementById('topBalance').innerText = `INR ${Number(currentState.balance).toFixed(2)}`;
+      document.getElementById('walletWithdrawable').innerText = `INR ${Number(currentState.withdrawable).toFixed(2)}`;
+      document.getElementById('withdrawableHint').innerText = `Withdrawable: INR ${Number(currentState.withdrawable).toFixed(2)}`;
+
+      const depList = document.getElementById('depositsList');
+      depList.innerHTML = currentState.deposits.length
+        ? currentState.deposits.map((d) => `
+            <div class="item">
+              <strong>${d.orderId || d.id}</strong> — INR ${Number(d.amount).toFixed(2)}
+              <div>Status: <strong>${d.status}</strong> ${d.utr ? `| UTR: ${d.utr}` : ''}</div>
+            </div>
+          `).join('')
+        : '<div class="muted">कोई Deposit रिकॉर्ड नहीं है</div>';
+
+      const wdList = document.getElementById('withdrawalsList');
+      wdList.innerHTML = currentState.withdrawals.length
+        ? currentState.withdrawals.map((w) => `
+            <div class="item">
+              <strong>${w.id}</strong> — INR ${Number(w.amount).toFixed(2)} (${w.status})
+              <div class="muted">${w.accountHolder} | ${w.accountNumber} | ${w.ifsc}</div>
+            </div>
+          `).join('')
+        : '<div class="muted">कोई Withdrawal रिक्वेस्ट नहीं है</div>';
+
+      renderAdminQueue();
+    }
+
+    function renderAdminQueue() {
+      const box = document.getElementById('adminQueue');
+      const pendingDeposits = currentState.deposits.filter((d) => d.orderId && d.status !== 'SUCCESS' && d.status !== 'REJECTED');
+      const pendingWithdrawals = currentState.withdrawals.filter((w) => w.status === 'PENDING');
+
+      let html = '';
+      if (pendingDeposits.length) {
+        html += '<div class="muted" style="margin-bottom:6px;">Pending Deposits:</div>';
+        html += pendingDeposits.map((d) => `
+          <div class="item">
+            <div><strong>${d.orderId}</strong> — INR ${d.amount} (${d.status})</div>
+            <div class="muted">UTR: ${d.utr || 'नहीं डाला'}</div>
+            <button class="btn-green btn-small" onclick="adminDepositAction('${d.orderId}', 'APPROVE')">Approve (+Balance)</button>
+            <button class="btn-red btn-small" onclick="adminDepositAction('${d.orderId}', 'REJECT')">Reject</button>
+          </div>
+        `).join('');
+      }
+
+      if (pendingWithdrawals.length) {
+        html += '<div class="muted" style="margin:10px 0 6px;">Pending Withdrawals:</div>';
+        html += pendingWithdrawals.map((w) => `
+          <div class="item">
+            <div><strong>${w.id}</strong> — INR ${w.amount} (${w.status})</div>
+            <div class="muted">${w.accountHolder} | ${w.accountNumber} | ${w.ifsc}</div>
+            <button class="btn-green btn-small" onclick="adminWithdrawAction('${w.id}', 'APPROVE')">Approve (Mark Paid)</button>
+            <button class="btn-red btn-small" onclick="adminWithdrawAction('${w.id}', 'REJECT')">Reject (Refund)</button>
+          </div>
+        `).join('');
+      }
+
+      if (!html) html = '<div class="muted">कोई पेंडिंग रिक्वेस्ट नहीं है।</div>';
+      box.innerHTML = html;
+    }
+
+    async function createDeposit() {
+      const amount = Number(document.getElementById('depositAmount').value);
+      const res = await fetch('/api/deposit/create', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ amount })
+      });
+      const data = await res.json();
+      if (!res.ok) return showNotice(data.error || 'Deposit ऑर्डर नहीं बन सका', true);
+
+      activeOrder = data.order;
+      document.getElementById('qrSection').classList.remove('hidden');
+      document.getElementById('qrOrderInfo').innerText = `Order ${activeOrder.orderId} — INR ${activeOrder.amount}`;
+      document.getElementById('qrImg').src = activeOrder.qrImageUrl;
+      document.getElementById('upiIdText').innerText = `UPI ID: ${activeOrder.upiId}`;
+      document.getElementById('upiPayLink').href = activeOrder.upiLink;
+      showNotice('QR कोड बन गया है। पेमेंट करके UTR सबमिट करें।');
+      loadState();
+    }
+
+    async function submitUtr() {
+      if (!activeOrder) return showNotice('पहले QR कोड जनरेट करें', true);
+      const utr = document.getElementById('utrInput').value;
+      const res = await fetch('/api/deposit/submit-utr', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ orderId: activeOrder.orderId, utr })
+      });
+      const data = await res.json();
+      if (!res.ok) return showNotice(data.error || 'UTR सबमिट नहीं हो सका', true);
+      document.getElementById('utrInput').value = '';
+      showNotice(data.message);
+      loadState();
+    }
+
+    async function requestWithdraw() {
+      const payload = {
+        accountHolder: document.getElementById('accHolder').value,
+        accountNumber: document.getElementById('accNumber').value,
+        ifsc: document.getElementById('ifscCode').value,
+        amount: Number(document.getElementById('withdrawAmount').value)
+      };
+      const res = await fetch('/api/withdraw/request', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(payload)
+      });
+      const data = await res.json();
+      if (!res.ok) return showNotice(data.error || 'Withdrawal रिक्वेस्ट नहीं भेजी जा सकी', true);
+      showNotice(data.message);
+      loadState();
+    }
+
+    async function adminDepositAction(orderId, action) {
+      const pin = document.getElementById('adminPin').value;
+      const res = await fetch('/api/admin/deposit/action', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ pin, orderId, action })
+      });
+      const data = await res.json();
+      if (!res.ok) return showNotice(data.error || 'कार्रवाई विफल रही', true);
+      currentState = data.state;
+      renderAll();
+      showNotice(`Deposit ${action} हो गया।`);
+    }
+
+    async function adminWithdrawAction(id, action) {
+      const pin = document.getElementById('adminPin').value;
+      const res = await fetch('/api/admin/withdraw/action', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ pin, id, action })
+      });
+      const data = await res.json();
+      if (!res.ok) return showNotice(data.error || 'कार्रवाई विफल रही', true);
+      currentState = data.state;
+      renderAll();
+      showNotice(`Withdrawal ${action} हो गया।`);
+    }
+
+    async function placeBet() {
+      const amount = Number(document.getElementById('betAmount').value) || 50;
+      const multiplier = Number((1.2 + Math.random() * 2.5).toFixed(2));
+      document.getElementById('multText').innerText = `${multiplier}x`;
+      const res = await fetch('/api/game/bet', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ amount, multiplier })
+      });
+      const data = await res.json();
+      if (!res.ok) return showNotice(data.error || 'बेट नहीं लग सकी', true);
+      showNotice(`बेट पूरी हुई! Payout: INR ${data.payout}`);
+      loadState();
+    }
+
+    loadState();
+  </script>
 </body>
 </html>
