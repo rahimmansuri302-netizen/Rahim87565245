@@ -187,3 +187,157 @@
   </script>
 </body>
 </html>
+<body>
+  <div class="app">
+    <div class="top">
+      <b style="color:#38bdf8">AK-777 PRO HUB</b>
+      <span class="wallet" id="bal">₹500.00</span>
+    </div>
+    <div style="display:flex;justify-content:space-between;font-size:12px;color:#94a3b8;margin-bottom:10px;">
+      <span id="who">Guest</span>
+      <button class="mini b" onclick="tab('auth')">OTP Login</button>
+    </div>
+    <div class="tabs">
+      <button class="tab-btn active" data-t="games" onclick="tab('games')">Games</button>
+      <button class="tab-btn" data-t="qr" onclick="tab('qr')">UPI QR</button>
+      <button class="tab-btn" data-t="wd" onclick="tab('wd')">Withdraw</button>
+      <button class="tab-btn" data-t="auth" onclick="tab('auth')">OTP ID</button>
+    </div>
+    <div class="panel active" id="p-games">
+      <h3 style="margin:0 0 8px;color:#38bdf8">Aviator Crash</h3>
+      <div class="box">
+        <div id="cst" style="font-size:12px;color:#94a3b8">Ready</div>
+        <div class="mult" id="mtxt">1.00x</div>
+        <div id="cwin" style="font-size:12px">Cashout: ₹0.00</div>
+      </div>
+      <label>Bet (₹)</label><input type="number" id="cbet" value="50" min="1" />
+      <div style="display:grid;grid-template-columns:1fr 1fr;gap:8px;">
+        <button class="act g" id="cstart" onclick="startCrash()">Start / Bet</button>
+        <button class="act a" id="ccash" onclick="cashCrash()" disabled>Cashout</button>
+      </div>
+      <div class="msg" id="cmsg"></div>
+      <div style="background:#0b1120;padding:10px;border-radius:10px;margin-top:12px;">
+        <h3 style="margin:0 0 8px;color:#38bdf8">Lucky Dice (1-6)</h3>
+        <label>Number</label><select id="dpick"><option>1</option><option>2</option><option selected>3</option><option>4</option><option>5</option><option>6</option></select>
+        <label>Bet (₹)</label><input type="number" id="dbet" value="20" min="1" />
+        <button class="act b" onclick="rollDice()">Roll (4x)</button>
+        <div class="msg" id="dmsg"></div>
+      </div>
+    </div>
+    <div class="panel" id="p-qr">
+      <h3 style="margin:0 0 8px;color:#38bdf8">असली UPI QR</h3>
+      <label>UPI ID</label><input type="text" id="upi" placeholder="name@ibl" />
+      <label>Name</label><input type="text" id="pname" placeholder="Rafik Ali" />
+      <label>Amount (₹)</label><input type="number" id="amt" placeholder="100" min="1" />
+      <label>Note</label><input type="text" id="note" placeholder="Order1" />
+      <button class="act g" onclick="makeQR()">QR बनाएं</button>
+      <button class="act b" onclick="addDep()">Balance में ₹ जोड़ें</button>
+      <div id="qrBox"><div id="qrcode"></div><div class="uri" id="utxt"></div></div>
+    </div>
+    <div class="panel" id="p-wd">
+      <h3 style="margin:0 0 8px;color:#38bdf8">Withdrawal</h3>
+      <label>Withdrawal UPI ID</label><input type="text" id="wupi" placeholder="user@ybl" />
+      <label>Amount (₹)</label><input type="number" id="wamt" placeholder="100" min="1" />
+      <button class="act b" onclick="addWd()">Withdraw Request</button>
+      <div class="msg" id="wmsg"></div>
+      <div id="wlist"></div>
+    </div>
+    <div class="panel" id="p-auth">
+      <h3 style="margin:0 0 8px;color:#38bdf8">OTP ID / Login</h3>
+      <label>Mobile / User ID</label><input type="text" id="aid" placeholder="9876543210" />
+      <label>Password</label><input type="password" id="apass" placeholder="4+ अक्षर" />
+      <button class="act a" onclick="sendOtp()">OTP भेजें (नई ID)</button>
+      <div id="obox" style="display:none;background:#172554;padding:8px;border-radius:8px;margin-top:8px;font-size:13px;">
+        <div id="otxt"></div>
+        <input type="text" id="oinp" placeholder="6-digit OTP" />
+        <button class="act g" onclick="verOtp()">Verify & ID बनाएं</button>
+      </div>
+      <button class="act b" onclick="doLogin()">बनी ID से Login</button>
+      <div class="msg" id="amsg"></div>
+    </div>
+  </div>
+  <script>
+    const K="ak777_v2", def={bal:500,user:null,users:{},wds:[]};
+    let s=JSON.parse(localStorage.getItem(K)||"null")||{...def}, otp=null, pend=null, tm=null, m=1, cp=1, b=0, fly=false;
+    function save(){ if(s.user&&s.users[s.user])s.users[s.user].bal=s.bal; localStorage.setItem(K,JSON.stringify(s)); draw(); }
+    function draw(){
+      document.getElementById("bal").innerText="₹"+Number(s.bal).toFixed(2);
+      document.getElementById("who").innerText=s.user?("ID: "+s.user):"Guest";
+      const wl=document.getElementById("wlist"); wl.innerHTML="";
+      s.wds.forEach(x=>{
+        const d=document.createElement("div"); d.className="item";
+        d.innerHTML=`<div><b>#${x.id}</b> ₹${x.amt} → <code>${x.upi}</code><br/><b>${x.st}</b></div><div>${x.st==="Pending"?`<button class="mini g" onclick="updWd('${x.id}','Paid')">Paid</button><button class="mini r" onclick="updWd('${x.id}','Cancelled')">Cancel</button>`:""}</div>`;
+        wl.appendChild(d);
+      });
+    }
+    function tab(n){
+      document.querySelectorAll(".tab-btn").forEach(el=>el.classList.toggle("active",el.dataset.t===n));
+      document.querySelectorAll(".panel").forEach(el=>el.classList.toggle("active",el.id==="p-"+n));
+    }
+    function startCrash(){
+      if(fly)return; const bet=Number(document.getElementById("cbet").value);
+      if(!bet||bet<=0||bet>s.bal){document.getElementById("cmsg").innerText="सही Bet डालें";return;}
+      s.bal=+(s.bal-bet).toFixed(2); save(); b=bet; m=1; fly=true; cp=+(1.15+Math.pow(Math.random(),2)*5).toFixed(2);
+      cstart.disabled=true; ccash.disabled=false; mtxt.classList.remove("crash"); cst.innerText="Flying..."; cmsg.innerText="";
+      tm=setInterval(()=>{
+        m=+(m+0.04).toFixed(2); mtxt.innerText=m.toFixed(2)+"x"; cwin.innerText="Cashout: ₹"+(b*m).toFixed(2);
+        if(m>=cp){clearInterval(tm);fly=false;b=0;mtxt.innerText=cp.toFixed(2)+"x";mtxt.classList.add("crash");cst.innerText="Crashed!";cwin.innerText="Cashout: ₹0.00";cstart.disabled=false;ccash.disabled=true;cmsg.innerText="क्रैश "+cp.toFixed(2)+"x";}
+      },90);
+    }
+    function cashCrash(){
+      if(!fly||!b)return; clearInterval(tm); const w=+(b*m).toFixed(2); s.bal=+(s.bal+w).toFixed(2); save();
+      fly=false;b=0;cst.innerText="Cashed Out!";cwin.innerText="Won: ₹"+w.toFixed(2);cstart.disabled=false;ccash.disabled=true;cmsg.innerText="जीते ₹"+w.toFixed(2);
+    }
+    function rollDice(){
+      const p=Number(dpick.value), bet=Number(dbet.value);
+      if(!bet||bet<=0||bet>s.bal){dmsg.innerText="सही Bet डालें";return;}
+      s.bal=+(s.bal-bet).toFixed(2); const r=Math.floor(Math.random()*6)+1;
+      if(r===p){const w=+(bet*4).toFixed(2);s.bal=+(s.bal+w).toFixed(2);dmsg.innerText=`Rolled ${r}! जीते ₹${w}`;}
+      else dmsg.innerText=`Rolled ${r} (आपका ${p})`;
+      save();
+    }
+    function makeQR(){
+      const pa=upi.value.trim().toLowerCase(); if(!pa.includes("@")){alert("सही UPI ID डालें");return;}
+      const q=new URLSearchParams({pa,cu:"INR"});
+      if(pname.value.trim())q.set("pn",pname.value.trim());
+      if(+amt.value>0)q.set("am",(+amt.value).toFixed(2));
+      if(note.value.trim())q.set("tn",note.value.trim());
+      const uri="upi://pay?"+q.toString();
+      qrcode.innerHTML=""; new QRCode(qrcode,{text:uri,width:180,height:180});
+      utxt.innerText=uri; qrBox.style.display="flex";
+    }
+    function addDep(){ const v=Number(amt.value)||100; s.bal=+(s.bal+v).toFixed(2); save(); alert("₹"+v+" जुड़ गया"); }
+    function addWd(){
+      const u=wupi.value.trim().toLowerCase(), v=Number(wamt.value);
+      if(!u.includes("@")||!v||v<=0){wmsg.innerText="सही UPI और रकम डालें";return;}
+      if(v>s.bal){wmsg.innerText="Balance कम है";return;}
+      s.bal=+(s.bal-v).toFixed(2);
+      s.wds.unshift({id:"WD"+Date.now().toString().slice(-5),upi:u,amt:v.toFixed(2),st:"Pending"});
+      save(); wmsg.innerText="रिक्वेस्ट सेव हो गई"; wupi.value=""; wamt.value="";
+    }
+    function updWd(id,st){
+      const x=s.wds.find(i=>i.id===id); if(!x)return;
+      if(st==="Cancelled"&&x.st==="Pending")s.bal=+(s.bal+Number(x.amt)).toFixed(2);
+      x.st=st; save();
+    }
+    function sendOtp(){
+      const id=aid.value.trim(), pw=apass.value.trim();
+      if(!id||pw.length<4){amsg.innerText="ID और 4+ अक्षर का Password डालें";return;}
+      otp=String(Math.floor(100000+Math.random()*900000)); pend={id,pw};
+      otxt.innerText="Test OTP: "+otp; obox.style.display="block"; amsg.innerText="OTP जनरेट हुआ";
+    }
+    function verOtp(){
+      if(!pend||oinp.value.trim()!==otp){amsg.innerText="गलत OTP";return;}
+      s.users[pend.id]={pw:pend.pw,bal:s.users[pend.id]?.bal??s.bal};
+      s.user=pend.id; s.bal=s.users[pend.id].bal; otp=null; pend=null; obox.style.display="none";
+      save(); amsg.innerText="ID बन गई: "+s.user; tab("games");
+    }
+    function doLogin(){
+      const id=aid.value.trim(), pw=apass.value.trim(), u=s.users[id];
+      if(!u||u.pw!==pw){amsg.innerText="ID या Password गलत है";return;}
+      s.user=id; s.bal=+(u.bal??500); save(); amsg.innerText="Login सफल: "+id; tab("games");
+    }
+    draw();
+  </script>
+</body>
+</html>
