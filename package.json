@@ -5,5 +5,21 @@
   "scripts": {
     "start": "node server.js",
     "dev": "nodemon server.js"
+  },
+  "description": "",
+  "repository": {
+    "type": "git",
+    "url": "git+https://rahimmansuri302-netizen:@github.com/rahimmansuri302-netizen/Rahim87565245.git"
+  },
+  "keywords": [],
+  "author": "",
+  "license": "ISC",
+  "type": "commonjs",
+  "bugs": {
+    "url": "https://github.com/rahimmansuri302-netizen/Rahim87565245/issues"
+  },
+  "homepage": "https://github.com/rahimmansuri302-netizen/Rahim87565245#readme",
+  "dependencies": {
+    "express": "^5.3.0"
   }
 }
