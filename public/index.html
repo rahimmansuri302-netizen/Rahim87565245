@@ -1,322 +1,175 @@
-
 <!DOCTYPE html>
 <html lang="hi">
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>AK777</title>
+  <title>UPI QR & Withdrawal Module</title>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/qrcodejs/1.0.0/qrcode.min.js"></script>
   <style>
-    * { box-sizing: border-box; font-family: Arial, sans-serif; }
-    body { margin: 0; background: #071318; color: #f1f5f9; padding-bottom: 70px; }
-    header {
-      display: flex; justify-content: space-between; align-items: center;
-      padding: 14px 16px; background: #0b1c24; border-bottom: 1px solid #16323f;
-      position: sticky; top: 0; z-index: 10;
+    body {
+      font-family: system-ui, -apple-system, sans-serif;
+      background: #0f172a;
+      color: #f8fafc;
+      margin: 0;
+      padding: 20px;
+      display: flex;
+      justify-content: center;
     }
-    .brand { font-size: 20px; font-weight: bold; color: #22c55e; }
-    .bal-box { background: #102a36; padding: 8px 12px; border-radius: 999px; font-weight: bold; font-size: 14px; }
-    .container { padding: 14px; max-width: 520px; margin: auto; }
-    .card {
-      background: #0d212b; border: 1px solid #183847; border-radius: 14px;
-      padding: 16px; margin-bottom: 14px;
+    .container {
+      width: 100%;
+      max-width: 420px;
+      background: #1e293b;
+      padding: 20px;
+      border-radius: 14px;
+      box-shadow: 0 10px 25px rgba(0,0,0,0.4);
     }
-    h2, h3 { margin: 0 0 12px 0; }
-    input, select {
-      width: 100%; padding: 11px 12px; margin-bottom: 10px;
-      border-radius: 10px; border: 1px solid #244b5e; background: #08161d;
-      color: #fff; font-size: 15px;
+    h2, h3 { margin-top: 0; color: #38bdf8; }
+    label { display: block; margin-top: 12px; font-size: 14px; color: #cbd5e1; }
+    input {
+      width: 100%;
+      box-sizing: border-box;
+      padding: 10px;
+      margin-top: 6px;
+      border-radius: 8px;
+      border: 1px solid #334155;
+      background: #0f172a;
+      color: #fff;
+      font-size: 15px;
     }
     button {
-      width: 100%; padding: 12px; border: none; border-radius: 10px;
-      font-size: 15px; font-weight: bold; cursor: pointer; margin-bottom: 8px;
+      width: 100%;
+      margin-top: 14px;
+      padding: 11px;
+      border: none;
+      border-radius: 8px;
+      font-size: 15px;
+      font-weight: 600;
+      cursor: pointer;
     }
-    .btn-green { background: #22c55e; color: #052e16; }
-    .btn-yellow { background: #f59e0b; color: #1f1300; }
-    .btn-blue { background: #3b82f6; color: #fff; }
-    .btn-red { background: #ef4444; color: #fff; }
-    .btn-small { width: auto; padding: 7px 12px; font-size: 13px; margin: 4px 6px 0 0; display: inline-block; }
-    .mult { font-size: 36px; font-weight: bold; text-align: center; margin: 14px 0; color: #38bdf8; }
-    .qr-box { text-align: center; background: #08161d; padding: 14px; border-radius: 12px; margin-top: 10px; }
-    .qr-box img { width: 200px; height: 200px; border-radius: 8px; background: #fff; padding: 6px; }
-    .item { background: #08161d; padding: 10px 12px; border-radius: 10px; margin-bottom: 8px; font-size: 14px; border: 1px solid #16323f; }
-    .muted { color: #94a3b8; font-size: 13px; }
-    .msg { background: #102a36; color: #86efac; padding: 10px; border-radius: 10px; margin-bottom: 10px; font-size: 14px; }
-    .err { background: #3b0d14; color: #fca5a5; padding: 10px; border-radius: 10px; margin-bottom: 10px; font-size: 14px; }
-    nav {
-      position: fixed; bottom: 0; left: 0; right: 0;
-      display: flex; background: #0b1c24; border-top: 1px solid #16323f;
+    .btn-qr { background: #22c55e; color: #052e16; }
+    .btn-wd { background: #38bdf8; color: #082f49; }
+    #qrBox {
+      margin-top: 18px;
+      background: #ffffff;
+      padding: 16px;
+      border-radius: 12px;
+      display: none;
+      flex-direction: column;
+      align-items: center;
+      color: #0f172a;
     }
-    nav button {
-      flex: 1; margin: 0; border-radius: 0; background: transparent;
-      color: #94a3b8; padding: 14px 6px; font-size: 14px;
+    .uri-text {
+      margin-top: 10px;
+      font-size: 11px;
+      word-break: break-all;
+      color: #475569;
+      text-align: center;
     }
-    nav button.active { color: #22c55e; border-top: 2px solid #22c55e; }
-    .hidden { display: none; }
-    a.upi-btn {
-      display: inline-block; text-decoration: none; background: #22c55e;
-      color: #052e16; font-weight: bold; padding: 10px 14px; border-radius: 10px; margin-top: 8px;
+    hr { border: 0; border-top: 1px solid #334155; margin: 24px 0; }
+    .log-item {
+      background: #0f172a;
+      padding: 10px;
+      border-radius: 8px;
+      margin-top: 8px;
+      font-size: 13px;
+      border-left: 3px solid #38bdf8;
     }
   </style>
 </head>
 <body>
-  <header>
-    <div class="brand">AK777</div>
-    <div class="bal-box" id="topBalance">INR 0.00</div>
-  </header>
-
   <div class="container">
-    <div id="noticeArea"></div>
+    <h2>असली UPI QR जनरेटर</h2>
+    <label>आपका UPI ID (VPA)</label>
+    <input type="text" id="upiId" placeholder="example@okaxis" />
 
-    <!-- GAMES TAB -->
-    <section id="tab-games">
-      <div class="card">
-        <h2>Aviator Live</h2>
-        <div class="mult" id="multText">1.80x</div>
-        <input type="number" id="betAmount" value="50" min="10" placeholder="Bet amount" />
-        <button class="btn-green" onclick="placeBet()">Place Bet</button>
-        <div class="muted" id="withdrawableHint">Withdrawable: INR 0.00</div>
-      </div>
-    </section>
+    <label>आपका नाम (Payee Name)</label>
+    <input type="text" id="payeeName" placeholder="Rafik Ali" />
 
-    <!-- WALLET TAB -->
-    <section id="tab-wallet" class="hidden">
-      <div class="card">
-        <h2>Deposit (QR / UPI)</h2>
-        <div class="muted" style="margin-bottom: 10px;">Withdrawable: <strong id="walletWithdrawable">INR 0.00</strong></div>
-        <input type="number" id="depositAmount" value="500" min="10" placeholder="Enter deposit amount (INR)" />
-        <button class="btn-green" onclick="createDeposit()">Generate QR Code</button>
+    <label>रकम (₹ Amount — खाली छोड़ने पर स्कैनर खुद डालेगा)</label>
+    <input type="number" id="amount" placeholder="100" min="1" step="0.01" />
 
-        <div id="qrSection" class="qr-box hidden">
-          <div id="qrOrderInfo" style="margin-bottom: 8px; font-weight: bold;"></div>
-          <img id="qrImg" alt="UPI QR Code" />
-          <div class="muted" style="margin-top: 8px;" id="upiIdText"></div>
-          <div><a id="upiPayLink" class="upi-btn" href="#">UPI App से पेमेंट करें</a></div>
-          <hr style="border-color: #16323f; margin: 14px 0;" />
-          <input type="text" id="utrInput" placeholder="12-digit UTR / Transaction ID डालें" />
-          <button class="btn-blue" onclick="submitUtr()">पेमेंट कन्फ़र्म करें (Submit UTR)</button>
-        </div>
-      </div>
+    <label>नोट / Ref ID (Optional)</label>
+    <input type="text" id="note" placeholder="Order101" />
 
-      <div class="card">
-        <h2>Withdrawal Request</h2>
-        <input type="text" id="accHolder" placeholder="Account holder name" />
-        <input type="text" id="accNumber" placeholder="Account number" />
-        <input type="text" id="ifscCode" placeholder="IFSC code" />
-        <input type="number" id="withdrawAmount" placeholder="Withdraw amount (min 110)" />
-        <button class="btn-yellow" onclick="requestWithdraw()">Request Withdrawal</button>
-      </div>
-    </section>
+    <button class="btn-qr" onclick="generateRealUPIQR()">QR कोड बनाएं</button>
 
-    <!-- HISTORY & ADMIN TAB -->
-    <section id="tab-history" class="hidden">
-      <div class="card">
-        <h2>Deposits & Orders</h2>
-        <div id="depositsList"></div>
-      </div>
+    <div id="qrBox">
+      <div id="qrcode"></div>
+      <div class="uri-text" id="uriPreview"></div>
+    </div>
 
-      <div class="card">
-        <h2>Withdrawal Requests</h2>
-        <div id="withdrawalsList"></div>
-      </div>
+    <hr />
 
-      <div class="card">
-        <h3>Admin Panel</h3>
-        <input type="password" id="adminPin" placeholder="Admin PIN (default: 1234)" />
-        <button class="btn-blue" onclick="loadState()">Refresh Requests</button>
-        <div id="adminQueue" style="margin-top: 10px;"></div>
-      </div>
-    </section>
+    <h3>Withdrawal रिक्वेस्ट (Record / Queue)</h3>
+    <label>जिस UPI ID पर निकालना है</label>
+    <input type="text" id="wdUpi" placeholder="user@ybl" />
+
+    <label>Withdrawal रकम (₹)</label>
+    <input type="number" id="wdAmount" placeholder="250" min="1" />
+
+    <button class="btn-wd" onclick="submitWithdrawal()">Withdrawal रिक्वेस्ट सेव करें</button>
+    <div id="wdList"></div>
   </div>
 
-  <nav>
-    <button id="nav-games" class="active" onclick="switchTab('games')">Games</button>
-    <button id="nav-wallet" onclick="switchTab('wallet')">Wallet</button>
-    <button id="nav-history" onclick="switchTab('history')">History</button>
-  </nav>
-
   <script>
-    let currentState = { balance: 0, withdrawable: 0, deposits: [], withdrawals: [] };
-    let activeOrder = null;
+    let qrInstance = null;
 
-    function showNotice(text, isError = false) {
-      const area = document.getElementById('noticeArea');
-      area.innerHTML = `<div class="${isError ? 'err' : 'msg'}">${text}</div>`;
-      setTimeout(() => { area.innerHTML = ''; }, 5000);
-    }
+    function generateRealUPIQR() {
+      const pa = document.getElementById("upiId").value.trim().toLowerCase();
+      const pn = document.getElementById("payeeName").value.trim();
+      const amRaw = document.getElementById("amount").value.trim();
+      const tn = document.getElementById("note").value.trim();
 
-    function switchTab(tab) {
-      ['games', 'wallet', 'history'].forEach((t) => {
-        document.getElementById('tab-' + t).classList.toggle('hidden', t !== tab);
-        document.getElementById('nav-' + t).classList.toggle('active', t === tab);
-      });
-      loadState();
-    }
-
-    async function loadState() {
-      const res = await fetch('/api/state');
-      currentState = await res.json();
-      renderAll();
-    }
-
-    function renderAll() {
-      document.getElementById('topBalance').innerText = `INR ${Number(currentState.balance).toFixed(2)}`;
-      document.getElementById('walletWithdrawable').innerText = `INR ${Number(currentState.withdrawable).toFixed(2)}`;
-      document.getElementById('withdrawableHint').innerText = `Withdrawable: INR ${Number(currentState.withdrawable).toFixed(2)}`;
-
-      const depList = document.getElementById('depositsList');
-      depList.innerHTML = currentState.deposits.length
-        ? currentState.deposits.map((d) => `
-            <div class="item">
-              <strong>${d.orderId || d.id}</strong> — INR ${Number(d.amount).toFixed(2)}
-              <div>Status: <strong>${d.status}</strong> ${d.utr ? `| UTR: ${d.utr}` : ''}</div>
-            </div>
-          `).join('')
-        : '<div class="muted">कोई Deposit रिकॉर्ड नहीं है</div>';
-
-      const wdList = document.getElementById('withdrawalsList');
-      wdList.innerHTML = currentState.withdrawals.length
-        ? currentState.withdrawals.map((w) => `
-            <div class="item">
-              <strong>${w.id}</strong> — INR ${Number(w.amount).toFixed(2)} (${w.status})
-              <div class="muted">${w.accountHolder} | ${w.accountNumber} | ${w.ifsc}</div>
-            </div>
-          `).join('')
-        : '<div class="muted">कोई Withdrawal रिक्वेस्ट नहीं है</div>';
-
-      renderAdminQueue();
-    }
-
-    function renderAdminQueue() {
-      const box = document.getElementById('adminQueue');
-      const pendingDeposits = currentState.deposits.filter((d) => d.orderId && d.status !== 'SUCCESS' && d.status !== 'REJECTED');
-      const pendingWithdrawals = currentState.withdrawals.filter((w) => w.status === 'PENDING');
-
-      let html = '';
-      if (pendingDeposits.length) {
-        html += '<div class="muted" style="margin-bottom:6px;">Pending Deposits:</div>';
-        html += pendingDeposits.map((d) => `
-          <div class="item">
-            <div><strong>${d.orderId}</strong> — INR ${d.amount} (${d.status})</div>
-            <div class="muted">UTR: ${d.utr || 'नहीं डाला'}</div>
-            <button class="btn-green btn-small" onclick="adminDepositAction('${d.orderId}', 'APPROVE')">Approve (+Balance)</button>
-            <button class="btn-red btn-small" onclick="adminDepositAction('${d.orderId}', 'REJECT')">Reject</button>
-          </div>
-        `).join('');
+      if (!pa || !pa.includes("@")) {
+        alert("कृपया सही UPI ID डालें (जैसे: name@upi या name@okicici)");
+        return;
       }
 
-      if (pendingWithdrawals.length) {
-        html += '<div class="muted" style="margin:10px 0 6px;">Pending Withdrawals:</div>';
-        html += pendingWithdrawals.map((w) => `
-          <div class="item">
-            <div><strong>${w.id}</strong> — INR ${w.amount} (${w.status})</div>
-            <div class="muted">${w.accountHolder} | ${w.accountNumber} | ${w.ifsc}</div>
-            <button class="btn-green btn-small" onclick="adminWithdrawAction('${w.id}', 'APPROVE')">Approve (Mark Paid)</button>
-            <button class="btn-red btn-small" onclick="adminWithdrawAction('${w.id}', 'REJECT')">Reject (Refund)</button>
-          </div>
-        `).join('');
+      const params = new URLSearchParams();
+      params.set("pa", pa);
+      if (pn) params.set("pn", pn);
+      if (amRaw && Number(amRaw) > 0) {
+        params.set("am", Number(amRaw).toFixed(2));
+      }
+      params.set("cu", "INR");
+      if (tn) {
+        params.set("tn", tn);
+        params.set("tr", tn.replace(/[^a-zA-Z0-9_-]/g, "").slice(0, 25));
       }
 
-      if (!html) html = '<div class="muted">कोई पेंडिंग रिक्वेस्ट नहीं है।</div>';
-      box.innerHTML = html;
-    }
+      const upiUri = `upi://pay?${params.toString()}`;
+      const qrContainer = document.getElementById("qrcode");
+      qrContainer.innerHTML = "";
 
-    async function createDeposit() {
-      const amount = Number(document.getElementById('depositAmount').value);
-      const res = await fetch('/api/deposit/create', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ amount })
+      qrInstance = new QRCode(qrContainer, {
+        text: upiUri,
+        width: 200,
+        height: 200,
+        correctLevel: QRCode.CorrectLevel.M
       });
-      const data = await res.json();
-      if (!res.ok) return showNotice(data.error || 'Deposit ऑर्डर नहीं बन सका', true);
 
-      activeOrder = data.order;
-      document.getElementById('qrSection').classList.remove('hidden');
-      document.getElementById('qrOrderInfo').innerText = `Order ${activeOrder.orderId} — INR ${activeOrder.amount}`;
-      document.getElementById('qrImg').src = activeOrder.qrImageUrl;
-      document.getElementById('upiIdText').innerText = `UPI ID: ${activeOrder.upiId}`;
-      document.getElementById('upiPayLink').href = activeOrder.upiLink;
-      showNotice('QR कोड बन गया है। पेमेंट करके UTR सबमिट करें।');
-      loadState();
+      document.getElementById("uriPreview").innerText = upiUri;
+      document.getElementById("qrBox").style.display = "flex";
     }
 
-    async function submitUtr() {
-      if (!activeOrder) return showNotice('पहले QR कोड जनरेट करें', true);
-      const utr = document.getElementById('utrInput').value;
-      const res = await fetch('/api/deposit/submit-utr', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ orderId: activeOrder.orderId, utr })
-      });
-      const data = await res.json();
-      if (!res.ok) return showNotice(data.error || 'UTR सबमिट नहीं हो सका', true);
-      document.getElementById('utrInput').value = '';
-      showNotice(data.message);
-      loadState();
-    }
+    function submitWithdrawal() {
+      const upi = document.getElementById("wdUpi").value.trim().toLowerCase();
+      const amt = Number(document.getElementById("wdAmount").value);
 
-    async function requestWithdraw() {
-      const payload = {
-        accountHolder: document.getElementById('accHolder').value,
-        accountNumber: document.getElementById('accNumber').value,
-        ifsc: document.getElementById('ifscCode').value,
-        amount: Number(document.getElementById('withdrawAmount').value)
-      };
-      const res = await fetch('/api/withdraw/request', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify(payload)
-      });
-      const data = await res.json();
-      if (!res.ok) return showNotice(data.error || 'Withdrawal रिक्वेस्ट नहीं भेजी जा सकी', true);
-      showNotice(data.message);
-      loadState();
-    }
+      if (!upi || !upi.includes("@") || !amt || amt <= 0) {
+        alert("सही UPI ID और रकम डालें।");
+        return;
+      }
 
-    async function adminDepositAction(orderId, action) {
-      const pin = document.getElementById('adminPin').value;
-      const res = await fetch('/api/admin/deposit/action', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ pin, orderId, action })
-      });
-      const data = await res.json();
-      if (!res.ok) return showNotice(data.error || 'कार्रवाई विफल रही', true);
-      currentState = data.state;
-      renderAll();
-      showNotice(`Deposit ${action} हो गया।`);
-    }
+      const refId = "WD" + Date.now().toString().slice(-6);
+      const item = document.createElement("div");
+      item.className = "log-item";
+      item.innerHTML = `<b>#${refId}</b> — ₹${amt.toFixed(2)} → <code>${upi}</code> (Pending)`;
+      document.getElementById("wdList").prepend(item);
 
-    async function adminWithdrawAction(id, action) {
-      const pin = document.getElementById('adminPin').value;
-      const res = await fetch('/api/admin/withdraw/action', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ pin, id, action })
-      });
-      const data = await res.json();
-      if (!res.ok) return showNotice(data.error || 'कार्रवाई विफल रही', true);
-      currentState = data.state;
-      renderAll();
-      showNotice(`Withdrawal ${action} हो गया।`);
+      document.getElementById("wdUpi").value = "";
+      document.getElementById("wdAmount").value = "";
     }
-
-    async function placeBet() {
-      const amount = Number(document.getElementById('betAmount').value) || 50;
-      const multiplier = Number((1.2 + Math.random() * 2.5).toFixed(2));
-      document.getElementById('multText').innerText = `${multiplier}x`;
-      const res = await fetch('/api/game/bet', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ amount, multiplier })
-      });
-      const data = await res.json();
-      if (!res.ok) return showNotice(data.error || 'बेट नहीं लग सकी', true);
-      showNotice(`बेट पूरी हुई! Payout: INR ${data.payout}`);
-      loadState();
-    }
-
-    loadState();
   </script>
 </body>
 </html>
