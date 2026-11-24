@@ -1,0 +1,82 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8"/>
+<meta name="viewport" content="width=device-width,initial-scale=1.0"/>
+<title>AK-777</title>
+<script src="https://checkout.razorpay.com/v1/checkout.js"></script>
+<style>
+body{margin:0;font-family:sans-serif;background:#091318;color:#fff;display:flex;justify-content:center}
+.app{width:100%;max-width:450px;min-height:100vh;background:#102028;padding-bottom:70px}
+.hdr{display:flex;justify-content:space-between;align-items:center;padding:12px 14px;background:#091318;border-bottom:1px solid #223b48}
+.logo{font-weight:900;font-size:20px;color:#f5b915}.logo span{color:#14b885}
+.pill{background:#182e39;padding:5px 12px;border-radius:20px;font-weight:700}
+.box{margin:12px;padding:14px;background:#172b36;border:1px solid #24404f;border-radius:12px}
+input{width:100%;padding:10px;margin:6px 0 10px;border-radius:8px;border:1px solid #2b4b5c;background:#0d1a21;color:#fff;box-sizing:border-box}
+button{width:100%;padding:12px;border:none;border-radius:20px;background:#14b885;color:#fff;font-weight:700;cursor:pointer}
+.nav{position:fixed;bottom:0;width:100%;max-width:450px;display:grid;grid-template-columns:repeat(3,1fr);background:#091318;border-top:1px solid #223b48}
+.nav div{padding:12px;text-align:center;font-size:13px;cursor:pointer}
+.screen{display:none}.screen.active{display:block}
+.modal{position:fixed;inset:0;background:rgba(0,0,0,.92);display:flex;align-items:center;justify-content:center;padding:16px;z-index:20}
+</style>
+</head>
+<body>
+<div class="app">
+  <div id="loginModal" class="modal">
+    <div class="box" style="width:100%;max-width:360px">
+      <div class="logo" style="text-align:center;margin-bottom:8px">AK<span>777</span></div>
+      <input id="phoneInp" placeholder="10-digit mobile" maxlength="10"/>
+      <div id="otpBox" style="display:none"><input id="otpInp" placeholder="Enter OTP"/><button onclick="verifyOtp()">Verify OTP</button></div>
+      <button id="sendBtn" onclick="sendOtp()">Send OTP</button>
+      <p id="hint" style="color:#f5b915;font-size:12px"></p>
+    </div>
+  </div>
+  <div class="hdr">
+    <div class="logo">AK<span>777</span></div>
+    <div class="pill">INR <span id="bal">0.00</span></div>
+  </div>
+  <div id="s1" class="screen active">
+    <div class="box">
+      <h3>Aviator Live</h3>
+      <div id="mult" style="font-size:34px;font-weight:900;text-align:center;padding:20px 0">1.00x</div>
+      <input id="betInp" type="number" value="50"/>
+      <button onclick="placeBet()">Place Bet</button>
+    </div>
+  </div>
+  <div id="s2" class="screen">
+    <div class="box">
+      <h3>Wallet</h3>
+      <p>Withdrawable: INR <span id="wdAvail">0.00</span></p>
+      <input id="depInp" type="number" value="500"/>
+      <button onclick="deposit()">Deposit</button>
+      <hr style="margin:14px 0;border-color:#24404f"/>
+      <input id="wdName" placeholder="Account holder name"/>
+      <input id="wdAcc" placeholder="Account number"/>
+      <input id="wdIfsc" placeholder="IFSC code"/>
+      <input id="wdAmt" type="number" placeholder="Withdraw amount (min 110)"/>
+      <button style="background:#f5b915;color:#000" onclick="withdraw()">Withdraw</button>
+    </div>
+  </div>
+  <div id="s3" class="screen"><div class="box" id="histBox">No records</div></div>
+  <div class="nav">
+    <div onclick="showS('s1')">Games</div>
+    <div onclick="showS('s2')">Wallet</div>
+    <div onclick="showS('s3');loadHist()">History</div>
+  </div>
+</div>
+<script>
+let token=localStorage.getItem('ak_tok')||'',user=null,m=1;
+const hdr=()=>({'Content-Type':'application/json',...(token?{Authorization:'Bearer '+token}:{})});
+function render(){if(!user)return;bal.textContent=Number(user.balance).toFixed(2);wdAvail.textContent=Number(user.withdrawable).toFixed(2)}
+function showS(id){document.querySelectorAll('.screen').forEach(x=>x.classList.remove('active'));document.getElementById(id).classList.add('active')}
+async function sendOtp(){const r=await fetch('/api/auth/send-otp',{method:'POST',headers:hdr(),body:JSON.stringify({phone:phoneInp.value})});const d=await r.json();if(!d.success)return alert(d.message);otpBox.style.display='block';sendBtn.style.display='none';if(d.demoOtp){hint.textContent='Demo OTP: '+d.demoOtp;otpInp.value=d.demoOtp}}
+async function verifyOtp(){const r=await fetch('/api/auth/verify-otp',{method:'POST',headers:hdr(),body:JSON.stringify({phone:phoneInp.value,otp:otpInp.value})});const d=await r.json();if(!d.success)return alert(d.message);token=d.token;localStorage.setItem('ak_tok',token);user=d.user;loginModal.style.display='none';render()}
+async function placeBet(){const r=await fetch('/api/game/bet',{method:'POST',headers:hdr(),body:JSON.stringify({amount:Number(betInp.value)})});const d=await r.json();if(!d.success)return alert(d.message);user=d.user;render();alert('Bet placed!')}
+async function deposit(){const r=await fetch('/api/wallet/deposit/create',{method:'POST',headers:hdr(),body:JSON.stringify({amount:Number(depInp.value)})});const d=await r.json();if(!d.success)return alert(d.message);if(d.razorpay&&window.Razorpay){new window.Razorpay({key:d.razorpay.keyId,amount:d.razorpay.amountPaise,currency:d.razorpay.currency,name:'AK-777',order_id:d.razorpay.orderId,handler:async resp=>{const v=await fetch('/api/wallet/deposit/verify',{method:'POST',headers:hdr(),body:JSON.stringify(resp)});const vd=await v.json();if(vd.success){user=vd.user;render();alert(vd.message)}}}).open();return}const w=await fetch('/api/wallet/deposit/webhook',{method:'POST',headers:hdr(),body:JSON.stringify({orderId:d.orderId})});const wd=await w.json();if(wd.success){user=wd.user;render();alert(wd.message)}}
+async function withdraw(){const r=await fetch('/api/wallet/withdraw',{method:'POST',headers:hdr(),body:JSON.stringify({name:wdName.value,accountNumber:wdAcc.value,ifsc:wdIfsc.value,amount:Number(wdAmt.value)})});const d=await r.json();alert(d.message);if(d.success){user=d.user;render()}}
+async function loadHist(){const r=await fetch('/api/wallet/history',{headers:hdr()});const d=await r.json();histBox.innerHTML=(d.history||[]).map(x=>`<div>${x.type}: INR ${x.amount} (${x.status})</div>`).join('')||'No records'}
+setInterval(()=>{m=m>=5?1:Number((m+0.05).toFixed(2));mult.textContent=m.toFixed(2)+'x'},200);
+(async()=>{if(!token)return;const r=await fetch('/api/auth/auto-login',{headers:hdr()});const d=await r.json();if(d.success){user=d.user;loginModal.style.display='none';render()}})();
+</script>
+</body>
+</html>
